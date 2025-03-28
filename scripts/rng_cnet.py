@@ -10,6 +10,7 @@ from modules.processing import StableDiffusionProcessing, fix_seed
 from modules.ui_components import InputAccordion
 from PIL import Image
 
+gradio4: bool = gr.__version__.startswith("4")
 logger = logging.getLogger("ControlNet")
 
 
@@ -132,9 +133,12 @@ class RNGCNet(scripts.Script):
             image = image.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
 
         img = np.asarray(image, dtype=np.uint8)
-        msk = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
+        if gradio4:
+            unit_0.image = img
+        else:
+            msk = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
+            unit_0.image = {"image": img, "mask": msk}
 
-        unit_0.image = {"image": img, "mask": msk}
         text: str = ""
 
         text_path = os.path.splitext(image_path)[0] + ".txt"
